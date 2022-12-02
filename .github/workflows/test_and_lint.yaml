@@ -22,10 +22,10 @@ name: TEST & LINT
 ##############################################################################################
 # jobs:
 #   build:
-#     uses: OWNER/REPO/.github/workflows/test_and_lint.yaml@v1.0.2
+#     uses: Aibel365/web-action-toolbox/.github/workflows/test_and_lint.yaml@main #⚠️ you need to set tag here like v2.0.0
 #     with:
-#       TOOLS_REPO: "OWNER/REPO"
-#       TOOLS_TAG: v1.0.2
+#       TOOLS_REPO: "Aibel365/web-action-toolbox"
+#       TOOLS_TAG: main #⚠️ you need to set tag here like v2.0.0
 ##############################################################################################
 
 

@@ -1,14 +1,8 @@
 # web-action
 
-> not ready for prod
-
-> reusable does not support private repo, this is why this is public
-
-Helper repo to release js projects
+Helper repo to release js projects, reusable actions does not support private repo yet, so this is the reason this is public
 
 This is build around setting main branch to only accept updated Pull Requests, and squash them. Where 1 pull request only have 1 fix or feat. It will never auto release anything, you create a PR to generate new release, or commit for temp `next` builds
-
-> scripts assumes `main` branch is used on source/gitops
 
 Using [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) npm package for releases with changelog
 
@@ -76,6 +70,7 @@ This also updates yaml test image version in gitops repo.
   * update packagejson with property `"commit-and-tag-version": {` (see sample code under)
     * important to update urls...
 
+> scripts assumes `main` branch is used on source/gitops
 
 To generate key use console and write:
 * `ssh-keygen -t ed25519 -C "firstname.lastname@aibel.com"`

@@ -22,10 +22,10 @@ name: GENERATE_RELEASE
 ##############################################################################################
 # jobs:
 #   build:
-#     uses: OWNER/REPO/.github/workflows/generate_release.yaml@v1.0.2
+#     uses: Aibel365/web-action-toolbox/.github/workflows/generate_release.yaml@main #⚠️ you need to set tag here like v2.0.0
 #     with:
-#       TOOLS_REPO: "OWNER/REPO"
-#       TOOLS_TAG: v1.0.2
+#       TOOLS_REPO: "Aibel365/web-action-toolbox"
+#       TOOLS_TAG: main #⚠️ you need to set tag here like v2.0.0
 #       YAML_REPO: "OWNER/REPO-gitops"
 #       YAML_FILE_PATH: cluster_test/test.yaml
 #       YAML_OBJ_PATH_COMBINED: "1.spec.template.spec.containers.0.image"

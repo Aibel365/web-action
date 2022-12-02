@@ -1,6 +1,6 @@
 {
   "name": "web-action-toolbox",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "shared action for js projects",
   "scripts": {
     "release": "commit-and-tag-version --release-as major",

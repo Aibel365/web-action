@@ -1,0 +1,47 @@
+name: LINT/TEST PR  - INTERNAL NOT SHARED
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited]
+    branches:
+      - "main"
+
+jobs:
+  build:
+    name: "Run tests/eslint/typescheck and lint pr title"
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Init - Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Source - checkout
+        uses: actions/checkout@v3
+        with:
+          path: source
+
+      - name: Source - npm install
+        working-directory: ./source
+        run: npm ci
+
+      - name: Source - test --if-present
+        working-directory: ./source
+        run: npm run test --if-present
+
+      - name: Source - eslint --if-present
+        working-directory: ./source
+        run: npm run eslint --if-present
+
+      - name: Source - typecheck --if-present
+        working-directory: ./source
+        run: npm run typecheck --if-present
+
+      - name: Source - lint PR title
+        working-directory: ./source
+        run: node ../tools/src/lintPrTitle "${{github.event.pull_request.title}}"

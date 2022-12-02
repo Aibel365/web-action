@@ -1,10 +1,13 @@
 # web-action
 
-Helper repo to release js projects, reusable actions does not support private repo yet, so this is the reason this is public
+Helper repo to release js projects & update test image in yaml.
 
-This is build around setting main branch to only accept updated Pull Requests, and squash them. Where 1 pull request only have 1 fix or feat. It will never auto release anything, you create a PR to generate new release, or commit for temp `next` builds
+Reusable actions does not support private repo yet, so this is the reason this is public
 
-Using [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) npm package for releases with changelog
+Project is build around setting main branch to only accept updated Pull Requests, and squash them. 
+Where 1 pull request only have 1 fix or feat. It will never auto release anything, you create a PR to generate new release, or commit for temp `next` builds.
+
+This is using [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) npm package for releases with changelog
 
 
 <br>
@@ -143,5 +146,5 @@ Sample of what you packagejson needs for `commit-and-tag-version`
 Build with old script I used, built to solve a task there and then, not built for unit testing. 
 Only run e2e with own test repo with its own gitops repo its dummy updating.
 
-I need to consider making some unit tests later
+I need to consider making some unit tests later if I refactor scripts
 

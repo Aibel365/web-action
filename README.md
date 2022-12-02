@@ -145,4 +145,8 @@ Sample of what you packagejson needs for `commit-and-tag-version`
 
 # todo:
 
-build with old script I used, built to solve a task there and then, not built for testing. So I could consider refactorig them a little so some of them are testable
+Build with old script I used, built to solve a task there and then, not built for unit testing. 
+Only run e2e with own test repo with its own gitops repo its dummy updating.
+
+I need to consider making some unit tests later
+

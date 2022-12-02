@@ -44,4 +44,4 @@ jobs:
 
       - name: Source - lint PR title
         working-directory: ./source
-        run: node ../src/lintPrTitle "${{github.event.pull_request.title}}"
+        run: node ./src/lintPrTitle "${{github.event.pull_request.title}}"

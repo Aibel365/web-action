@@ -30,6 +30,28 @@ On pull request to main this tries to run there if they exist:
 
  > `!` if breaking fix/feature, need to be version  1 or higher for this to work. Also notice all have 1 space after `:`
 
+
+[sample from e2e testing](https://github.com/Aibel365/web-e2e-test-action-toolbox/blob/main/.github/workflows/test_and_lint.yaml)
+```yaml
+name: TEST & LINT
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited]
+    branches:
+      - "main"
+
+jobs:
+  build:
+    uses: Aibel365/web-action-toolbox/.github/workflows/test_and_lint.yaml@v1.0.0 # ⚠️ CHECK VERSION
+    with:
+      TOOLS_REPO: Aibel365/web-action-toolbox
+      TOOLS_TAG: v1.0.0 # ⚠️ CHECK VERSION
+
+```
+
+
+
 <br>
 <br>
 <br>
@@ -43,6 +65,40 @@ So version `1.1.0` will get turned into `web-action:1.1.1-next.3543330598`.
 
 This also updates yaml test image version in gitops repo.
 
+[sample from e2e testing](https://github.com/Aibel365/web-e2e-test-action-toolbox/blob/main/.github/workflows/generate_test.yaml)
+```yaml
+name: GENERATE_TEST
+
+on:
+  push:
+    branches:
+      - '**'
+      - "!main"
+
+jobs:
+  build:
+    uses: Aibel365/web-action-toolbox/.github/workflows/generate_test.yaml@v1.0.0 # ⚠️ CHECK VERSION
+    with:
+      TOOLS_REPO: Aibel365/web-action-toolbox
+      TOOLS_TAG: v1.0.0 # ⚠️ CHECK VERSION
+      
+      YAML_REPO: "Aibel365/web-e2e-test-action-toolbox-gitops"
+      YAML_FILE_PATH: cluster_test/test.yaml
+      YAML_OBJ_PATH_COMBINED: "1.spec.template.spec.containers.0.image"
+      # or
+      #YAML_OBJ_PATH_NAMEONLY: "1.spec.template.spec.containers.0.newName"
+      #YAML_OBJ_PATH_VERSIONONLY: "1.spec.template.spec.containers.0.newTag"
+
+      ACR_NAME: "[⚠️REPLACE_ME].azurecr.io"
+      ACR_IMAGE_NAME: "[⚠️REPLACE_ME].azurecr.io/team-incubator/web-e2e-test-action-toolbox"
+    secrets:
+      SSH_PRIVATE_KEY_SOURCE: ${{ secrets.SSH_PRIVATE_KEY_SOURCE }}
+      SSH_PRIVATE_KEY_GITOPS: ${{ secrets.SSH_PRIVATE_KEY_GITOPS }}
+      
+      CONTAINER_USERNAME: ${{ secrets.CONTAINER_USERNAME }}
+      CONTAINER_PASSWORD: ${{ secrets.CONTAINER_PASSWORD }}
+
+```
 
 <br>
 <br>
@@ -54,6 +110,40 @@ This triggers if push commits contains `GENERATE_RELEASE` on all branches execep
 
 This also updates yaml test image version in gitops repo.
 
+[sample from e2e testing](https://github.com/Aibel365/web-e2e-test-action-toolbox/blob/main/.github/workflows/generate_release.yaml)
+
+```yaml
+name: GENERATE_RELEASE
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    uses: Aibel365/web-action-toolbox/.github/workflows/generate_release.yaml@v1.0.0 # ⚠️ CHECK VERSION
+    with:
+      TOOLS_REPO: Aibel365/web-action-toolbox
+      TOOLS_TAG: v1.0.0 # ⚠️ CHECK VERSION
+
+      YAML_REPO: "Aibel365/web-e2e-test-action-toolbox-gitops"
+      YAML_FILE_PATH: cluster_test/test.yaml
+      YAML_OBJ_PATH_COMBINED: "1.spec.template.spec.containers.0.image"
+      # or
+      #YAML_OBJ_PATH_NAMEONLY: "1.spec.template.spec.containers.0.newName"
+      #YAML_OBJ_PATH_VERSIONONLY: "1.spec.template.spec.containers.0.newTag"
+
+      ACR_NAME: "[⚠️REPLACE_ME].azurecr.io"
+      ACR_IMAGE_NAME: "[⚠️REPLACE_ME].azurecr.io/team-incubator/web-e2e-test-action-toolbox"
+    secrets:
+      SSH_PRIVATE_KEY_SOURCE: ${{ secrets.SSH_PRIVATE_KEY_SOURCE }}
+      SSH_PRIVATE_KEY_GITOPS: ${{ secrets.SSH_PRIVATE_KEY_GITOPS }}
+
+      CONTAINER_USERNAME: ${{ secrets.CONTAINER_USERNAME }}
+      CONTAINER_PASSWORD: ${{ secrets.CONTAINER_PASSWORD }}
+```
+
 
 <br>
 <br>
@@ -63,7 +153,7 @@ This also updates yaml test image version in gitops repo.
 
 # To use in other repo
 
-* add workflow you need, see docs in top of each one
+* add workflow you need, see docs in top of each one/this readme
 * copy release.md
 * add secrets to github
   * CONTAINER_USERNAME

@@ -3,11 +3,8 @@
   "version": "0.0.1",
   "description": "shared action for js projects",
   "scripts": {
-    "release": "commit-and-tag-version",
-    "release-test": "commit-and-tag-version  --dry-run",
-    "release:minor": "commit-and-tag-version --release-as minor",
-    "release:patch": "commit-and-tag-version --release-as patch",
-    "release:major": "commit-and-tag-version --release-as major",
+    "release": "commit-and-tag-version --release-as major",
+    "release-test": "commit-and-tag-version  --release-as major --dry-run",
     "eslint": "eslint ./src/**/*.js",
     "eslint:fix": "eslint --fix ./src/**/*.js",
     "test": "jest",

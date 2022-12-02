@@ -1,0 +1,92 @@
+name: TEST & LINT
+
+#############################################################################################
+# Description
+#############################################################################################
+#
+# This will generate new pod "x.y.z-next.xyz" and update yaml
+# if commit contains GENERATE_RELEASE
+#
+##############################################################################################
+# Add this to you file
+##############################################################################################
+#
+# on:
+#   pull_request:
+#     types: [opened, synchronize, edited]
+#     branches:
+#       - 'main'
+#
+##############################################################################################
+# Add this section and update tags etc, you can not use env variables here
+##############################################################################################
+# jobs:
+#   build:
+#     uses: Aibel365/web-action-toolbox/.github/workflows/test_and_lint.yaml@main #⚠️ you need to set tag here like v2.0.0
+#     with:
+#       TOOLS_REPO: "Aibel365/web-action-toolbox"
+#       TOOLS_TAG: main #⚠️ you need to set tag here like v2.0.0
+##############################################################################################
+
+
+##############################################################################################
+# ⚠️ THIS IS THE CODE YOU WILL CALL, DO NOT COPY TO YOUR REPO
+##############################################################################################
+
+on:
+  workflow_call:
+    inputs:
+      TOOLS_REPO:
+        required: true
+        type: string
+      TOOLS_TAG:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: "Run tests/eslint/typescheck and lint pr title"
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Init - Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Tools - checkout
+        uses: actions/checkout@v3
+        with:
+          repository: "${{ inputs.TOOLS_REPO }}"
+          ref: ${{inputs.TOOLS_TAG}}
+          fetch-depth: 0
+          path: tools
+
+      - name: Source - checkout
+        uses: actions/checkout@v3
+        with:
+          path: source
+
+      - name: Source - npm install
+        working-directory: ./source
+        run: npm ci
+
+      - name: Source - test --if-present
+        working-directory: ./source
+        run: npm run test --if-present
+
+      - name: Source - eslint --if-present
+        working-directory: ./source
+        run: npm run eslint --if-present
+
+      - name: Source - typecheck --if-present
+        working-directory: ./source
+        run: npm run typecheck --if-present
+
+      - name: Source - lint PR title
+        working-directory: ./source
+        run: node ../tools/src/lintPrTitle "${{github.event.pull_request.title}}"

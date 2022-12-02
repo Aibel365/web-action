@@ -136,8 +136,8 @@ Sample of what you packagejson needs for `commit-and-tag-version`
         "type": "json"
       }
     ],
-    "commitUrlFormat": "https://github.com/web-action-tool/commits/{{hash}}",
-    "compareUrlFormat": "https://github.com/web-action-tool/compare/{{previousTag}}...{{currentTag}}"
+    "commitUrlFormat": "https://github.com/web-action-toolbox/commits/{{hash}}",
+    "compareUrlFormat": "https://github.com/web-action-toolbox/compare/{{previousTag}}...{{currentTag}}"
   }
 }
 ```

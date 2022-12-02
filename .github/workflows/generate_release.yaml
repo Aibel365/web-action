@@ -1,0 +1,240 @@
+name: GENERATE_RELEASE
+
+#############################################################################################
+# Description
+#############################################################################################
+#
+# This will generate release, new pod and update yaml,
+# if commit contains GENERATE_RELEASE
+#
+##############################################################################################
+# Add this to you file
+##############################################################################################
+# name: GENERATE_RELEASE
+# 
+# on:
+#   push:
+#     branches:
+#       - main
+#
+##############################################################################################
+# Add this section and update tags etc, you can not use env variables here
+##############################################################################################
+# jobs:
+#   build:
+#     uses: OWNER/REPO/.github/workflows/generate_release.yaml@v1.0.2
+#     with:
+#       TOOLS_REPO: "OWNER/REPO"
+#       TOOLS_TAG: v1.0.2
+#       YAML_REPO: "OWNER/REPO-gitops"
+#       YAML_FILE_PATH: cluster_test/test.yaml
+#       YAML_OBJ_PATH_COMBINED: "1.spec.template.spec.containers.0.image"
+#       # or
+#       #YAML_OBJ_PATH_NAMEONLY: "1.spec.template.spec.containers.0.newName"
+#       #YAML_OBJ_PATH_VERSIONONLY: "1.spec.template.spec.containers.0.newTag"
+#       ACR_NAME: "my_name.azurecr.io"
+#       ACR_IMAGE_NAME: "my_name.azurecr.io/owner/pod-name"
+#     secrets:
+#       SSH_PRIVATE_KEY_SOURCE: ${{ secrets.SSH_PRIVATE_KEY_SOURCE }}
+#       SSH_PRIVATE_KEY_GITOPS: ${{ secrets.SSH_PRIVATE_KEY_GITOPS }}
+#       CONTAINER_USERNAME: ${{ secrets.SSH_PRIVATE_KEY_SOURCE }}
+#       CONTAINER_PASSWORD: ${{ secrets.CONTAINER_PASSWORD }}
+##############################################################################################
+
+
+##############################################################################################
+# ⚠️ THIS IS THE CODE YOU WILL CALL, DO NOT COPY TO YOUR REPO
+##############################################################################################
+
+on:
+  workflow_call:
+    inputs:
+      TOOLS_REPO:
+        required: true
+        type: string
+      TOOLS_TAG:
+        required: true
+        type: string
+      YAML_REPO:
+        required: true
+        type: string
+      YAML_FILE_PATH:
+        required: true
+        type: string
+      YAML_OBJ_PATH_COMBINED:
+        required: false
+        type: string
+      YAML_OBJ_PATH_NAMEONLY:
+        required: false
+        type: string
+      YAML_OBJ_PATH_VERSIONONLY:
+        required: false
+        type: string
+      ACR_NAME:
+        required: true
+        type: string
+      ACR_IMAGE_NAME:
+        required: true
+        type: string
+    secrets:
+      SSH_PRIVATE_KEY_SOURCE:
+        required: true
+      SSH_PRIVATE_KEY_GITOPS:
+        required: true
+      CONTAINER_USERNAME:
+        required: true
+      CONTAINER_PASSWORD:
+        required: true
+
+jobs:
+  build:
+    if: contains(github.event.head_commit.message, 'GENERATE_RELEASE')
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - name: Init - Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Tools - checkout
+        uses: actions/checkout@v3
+        with:
+          repository: "${{ inputs.TOOLS_REPO }}"
+          ref: ${{inputs.TOOLS_TAG}}
+          fetch-depth: 0
+          path: tools
+
+      - name: Tools - npm install
+        working-directory: ./tools
+        run: npm install --omit=dev
+
+      - name: Source - checkout
+        uses: actions/checkout@v3
+        with:
+          # this should be main later
+          ref: ${{github.ref_name}}
+          fetch-depth: 0
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_SOURCE }}
+          path: source
+
+      - name: Source - generate release auto (no push, just for version)
+        if: "!contains(github.event.head_commit.message, 'GENERATE_RELEASE_MAJOR') && !contains(github.event.head_commit.message, 'GENERATE_RELEASE_MINOR')"
+        working-directory: ./source
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          npx commit-and-tag-version
+          # dont push, we want all to be successful before any push, so we will do it 2 times
+
+      - name: Source - generate release force minor (no push, just for version)
+        if: contains(github.event.head_commit.message, 'GENERATE_RELEASE_MINOR')
+        working-directory: ./source
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          npx commit-and-tag-version --release-as minor
+          # dont push, we want all to be successful before any push, so we will do it 2 times
+
+      - name: Source - generate release force major (no push, just for version)
+        if: contains(github.event.head_commit.message, 'GENERATE_RELEASE_MAJOR')
+        working-directory: ./source
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          npx commit-and-tag-version --release-as major
+          # dont push, we want all to be successful before any push, so we will do it 2 times
+
+      - name: Source - generate temp env for version to use
+        working-directory: ./source
+        run: |
+          node ../tools/src/sendVersionToFile
+          echo "VERSION_ENV_CACHE=$(cat .versionEnvCache)" >> $GITHUB_ENV
+          cat .versionEnvCache
+          rm .versionEnvCache
+
+      - name: Source - build docker (edits temp package.json for docker build, that why we do a git reset)
+        working-directory: ./source
+        run: node ../tools/src/buildDocker "${{inputs.ACR_IMAGE_NAME}}" "${{env.VERSION_ENV_CACHE}}"
+
+      - name: Source - login to ACR
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ inputs.ACR_NAME }}
+          username: ${{ secrets.CONTAINER_USERNAME }}
+          password: ${{ secrets.CONTAINER_PASSWORD }}
+
+      - name: Source - push docker
+        working-directory: ./source
+        run: node ../tools/src/pushDocker "${{inputs.ACR_IMAGE_NAME}}" "${{env.VERSION_ENV_CACHE}}"
+
+      - name: Gitops - checkout
+        uses: actions/checkout@v3
+        with:
+          repository: "${{ inputs.YAML_REPO }}"
+          ref: main
+          fetch-depth: 0
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY_GITOPS }}
+          path: gitops
+
+      - name: Source - update test yaml in gitops  (name & version)
+        if: ${{inputs.YAML_OBJ_PATH_COMBINED}}
+        working-directory: ./source
+        run: node ../tools/src/updateYaml "${{ inputs.YAML_OBJ_PATH_COMBINED }}" "../gitops/${{ inputs.YAML_FILE_PATH }}" "${{inputs.ACR_IMAGE_NAME}}:${{env.VERSION_ENV_CACHE}}"
+
+      - name: Source - update test yaml in gitops  (name only)
+        if: ${{inputs.YAML_OBJ_PATH_NAMEONLY}}
+        working-directory: ./source
+        run: node ../tools/src/updateYaml "${{ inputs.YAML_OBJ_PATH_NAMEONLY }}" "../gitops/${{ inputs.YAML_FILE_PATH }}" "${{inputs.ACR_IMAGE_NAME}}"
+
+      - name: Source - update test yaml in gitops  (version only)
+        if: ${{inputs.YAML_OBJ_PATH_VERSIONONLY}}
+        working-directory: ./source
+        run: node ../tools/src/updateYaml "${{ inputs.YAML_OBJ_PATH_VERSIONONLY }}" "../gitops/${{ inputs.YAML_FILE_PATH }}" "${{env.VERSION_ENV_CACHE}}"
+
+      - name: Gitops - commit yaml
+        working-directory: ./gitops
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Updated test to ${{inputs.ACR_IMAGE_NAME}}:${{env.VERSION_ENV_CACHE}}"
+          git push
+
+      - name: Source - reset git, so we can make release without any junk
+        working-directory: ./source
+        run: |
+          git fetch origin
+          git reset --hard origin/main
+
+      - name: Source - generate release auto with push
+        if: "!contains(github.event.head_commit.message, 'GENERATE_RELEASE_MAJOR') && !contains(github.event.head_commit.message, 'GENERATE_RELEASE_MINOR')"
+        working-directory: ./source
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          npx commit-and-tag-version --tag-force
+          git push --force --follow-tags origin main
+
+      - name: Source - generate release force minor with push
+        if: contains(github.event.head_commit.message, 'GENERATE_RELEASE_MINOR')
+        working-directory: ./source
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          npx commit-and-tag-version --release-as minor --tag-force
+          git push --force --follow-tags origin main
+
+      - name: Source - generate release force major with push
+        if: contains(github.event.head_commit.message, 'GENERATE_RELEASE_MAJOR')
+        working-directory: ./source
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          npx commit-and-tag-version --release-as major --tag-force
+          git push --force --follow-tags origin main
+

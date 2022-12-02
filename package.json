@@ -1,0 +1,99 @@
+{
+  "name": "web-action-tool",
+  "version": "0.0.1",
+  "description": "shared action for js projects",
+  "scripts": {
+    "release": "commit-and-tag-version",
+    "release-test": "commit-and-tag-version  --dry-run",
+    "release:minor": "commit-and-tag-version --release-as minor",
+    "release:patch": "commit-and-tag-version --release-as patch",
+    "release:major": "commit-and-tag-version --release-as major",
+    "eslint": "eslint ./src/**/*.js",
+    "eslint:fix": "eslint --fix ./src/**/*.js",
+    "test": "jest",
+    "testing": "jest --watch",
+    "generate_test": "git commit --allow-empty -m \"GENERATE_TEST\" && git push"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web-action-tool.git"
+  },
+  "module": "",
+  "keywords": [],
+  "author": "Vegar Ringdal",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/web-action-tool/issues"
+  },
+  "homepage": "https://github.com/web-action-tool#readme",
+  "devDependencies": {
+    "@types/jest": "^29.2.3",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "esbuild": "^0.15.16",
+    "esbuild-helpers": "^0.0.9",
+    "eslint": "^8.28.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-semistandard": "^17.0.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.5.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "jest": "^29.3.1",
+    "ts-jest": "^29.0.3",
+    "typescript": "^4.9.3",
+    "commit-and-tag-version": "^10.1.0"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "commit-and-tag-version": {
+    "types": [
+      {
+        "type": "feat",
+        "section": "Features"
+      },
+      {
+        "type": "fix",
+        "section": "Bug Fixes"
+      },
+      {
+        "type": "chore",
+        "hidden": true
+      },
+      {
+        "type": "docs",
+        "hidden": true
+      },
+      {
+        "type": "style",
+        "hidden": true
+      },
+      {
+        "type": "refactor",
+        "hidden": true
+      },
+      {
+        "type": "perf",
+        "hidden": true
+      },
+      {
+        "type": "test",
+        "hidden": true
+      }
+    ],
+    "bumpFiles": [
+      {
+        "filename": "package.json",
+        "type": "json"
+      },
+      {
+        "filename": "package-lock.json",
+        "type": "json"
+      }
+    ],
+    "commitUrlFormat": "https://github.com/Aibel365/web-action-tool/commits/{{hash}}",
+    "compareUrlFormat": "https://github.com/Aibel365/web-action-tool/compare/{{previousTag}}...{{currentTag}}"
+  }
+}

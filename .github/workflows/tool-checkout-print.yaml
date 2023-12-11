@@ -1,0 +1,68 @@
+on:
+  workflow_call:
+
+# Add a small change here.
+# Yet another change
+
+jobs:
+  checkout_print_default:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # This will NOT be able to read the changes from incoming PRs.
+      - name: read a file and print it
+        run: |
+          cat .github/workflows/tool-checkout-print.yaml
+
+  checkout_print_pr_head_sha:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      # This WILL be able to read the changes from incoming PRs.
+      - name: read a file and print it
+        run: |
+          cat .github/workflows/tool-checkout-print.yaml
+
+  checkout_print_github_ref:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      # This will NOT be able to read the changes from incoming PRs.
+      - name: read a file and print it
+        run: |
+          cat .github/workflows/tool-checkout-print.yaml
+
+  checkout_print_github_ref_name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      # This will NOT be able to read the changes from incoming PRs.
+      - name: read a file and print it
+        run: |
+          cat .github/workflows/tool-checkout-print.yaml
+
+  checkout_general:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - name: read a file and print it
+        run: |
+          cat .github/workflows/tool-checkout-print.yaml

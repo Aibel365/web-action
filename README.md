@@ -1,3 +1,28 @@
+# WILL BE REPLACED BY NEW
+
+New toolbox repoository is here: https://github.com/AibelDevs/action-toolbox 
+
+When all repositories have been moved to new toolbox this repo be set to readonly/made private
+
+
+
+
+---
+
+<br>
+<br>
+<br>
+
+<br>
+<br>
+<br>
+
+<br>
+<br>
+<br>
+
+
+
 # web-action
 
 Helper repo to release js projects & update test image in yaml.
